@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Loader2, Pencil, Plus, Trash2, Users, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import SearchBar from '../../components/admin/SearchBar';
 import type { ChurchEvent, ChurchEventCategory } from '../../types';
 
 const categoryLabels: Record<ChurchEventCategory, string> = {
@@ -28,6 +29,17 @@ export default function AdminEvents() {
   const [isLoading, setIsLoading] = useState(true);
   const [editing, setEditing] = useState<ChurchEvent | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [query, setQuery] = useState('');
+
+  const filtered = useMemo(
+    () =>
+      events.filter((e) =>
+        `${e.title} ${e.location} ${categoryLabels[e.category]}`
+          .toLowerCase()
+          .includes(query.trim().toLowerCase())
+      ),
+    [events, query]
+  );
 
   async function loadEvents() {
     setIsLoading(true);
@@ -61,6 +73,12 @@ export default function AdminEvents() {
         </button>
       </div>
 
+      <SearchBar
+        value={query}
+        onChange={setQuery}
+        placeholder="Rechercher un événement..."
+      />
+
       {isLoading ? (
         <div className="flex justify-center py-16">
           <Loader2 size={22} className="animate-spin text-gold" />
@@ -69,9 +87,13 @@ export default function AdminEvents() {
         <p className="py-16 text-center text-sm text-mist">
           Aucun événement pour le moment.
         </p>
+      ) : filtered.length === 0 ? (
+        <p className="py-16 text-center text-sm text-mist">
+          Aucun résultat pour cette recherche.
+        </p>
       ) : (
         <div className="mt-8 space-y-3">
-          {events.map((event) => (
+          {filtered.map((event) => (
             <div key={event.id} className="card-panel flex items-center gap-4 p-4">
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium text-paper">

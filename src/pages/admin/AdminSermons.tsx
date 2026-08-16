@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import SearchBar from '../../components/admin/SearchBar';
 import type { Sermon } from '../../types';
 
 const emptyForm = {
@@ -20,6 +21,17 @@ export default function AdminSermons() {
   const [isLoading, setIsLoading] = useState(true);
   const [editing, setEditing] = useState<Sermon | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [query, setQuery] = useState('');
+
+  const filtered = useMemo(
+    () =>
+      sermons.filter((s) =>
+        `${s.title} ${s.speaker} ${s.theme} ${s.series ?? ''}`
+          .toLowerCase()
+          .includes(query.trim().toLowerCase())
+      ),
+    [sermons, query]
+  );
 
   async function loadSermons() {
     setIsLoading(true);
@@ -53,6 +65,12 @@ export default function AdminSermons() {
         </button>
       </div>
 
+      <SearchBar
+        value={query}
+        onChange={setQuery}
+        placeholder="Rechercher un sermon..."
+      />
+
       {isLoading ? (
         <div className="flex justify-center py-16">
           <Loader2 size={22} className="animate-spin text-gold" />
@@ -61,9 +79,13 @@ export default function AdminSermons() {
         <p className="py-16 text-center text-sm text-mist">
           Aucun sermon pour le moment.
         </p>
+      ) : filtered.length === 0 ? (
+        <p className="py-16 text-center text-sm text-mist">
+          Aucun résultat pour cette recherche.
+        </p>
       ) : (
         <div className="mt-8 space-y-3">
-          {sermons.map((sermon) => (
+          {filtered.map((sermon) => (
             <div
               key={sermon.id}
               className="card-panel flex items-center gap-4 p-4"

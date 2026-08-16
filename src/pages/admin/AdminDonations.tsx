@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import SearchBar from '../../components/admin/SearchBar';
 import type { Donation, DonationFund, DonationMethod } from '../../types';
 
 interface DonationRow extends Donation {
@@ -25,6 +26,17 @@ const methodLabels: Record<DonationMethod, string> = {
 export default function AdminDonations() {
   const [items, setItems] = useState<DonationRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [query, setQuery] = useState('');
+
+  const filtered = useMemo(
+    () =>
+      items.filter((i) =>
+        `${i.full_name} ${i.email} ${fundLabels[i.fund]} ${methodLabels[i.method]}`
+          .toLowerCase()
+          .includes(query.trim().toLowerCase())
+      ),
+    [items, query]
+  );
 
   useEffect(() => {
     async function load() {
@@ -54,12 +66,22 @@ export default function AdminDonations() {
         </div>
       )}
 
+      <SearchBar
+        value={query}
+        onChange={setQuery}
+        placeholder="Rechercher un don..."
+      />
+
       {isLoading ? (
         <div className="flex justify-center py-16">
           <Loader2 size={22} className="animate-spin text-gold" />
         </div>
       ) : items.length === 0 ? (
         <p className="py-16 text-center text-sm text-mist">Aucun don enregistré.</p>
+      ) : filtered.length === 0 ? (
+        <p className="py-16 text-center text-sm text-mist">
+          Aucun résultat pour cette recherche.
+        </p>
       ) : (
         <div className="mt-8 overflow-x-auto">
           <table className="w-full text-left text-sm">
@@ -73,7 +95,7 @@ export default function AdminDonations() {
               </tr>
             </thead>
             <tbody>
-              {items.map((item) => (
+              {filtered.map((item) => (
                 <tr key={item.id} className="border-b border-white/5">
                   <td className="py-3 pr-4">
                     <p className="text-paper">{item.full_name}</p>
