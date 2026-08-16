@@ -1,8 +1,9 @@
-import { NavLink, Navigate, Outlet } from 'react-router-dom';
+import { NavLink, Navigate, Outlet, Link } from 'react-router-dom';
 import {
   BookOpen,
   CalendarDays,
   Clock,
+  ExternalLink,
   HandCoins,
   Loader2,
   LogOut,
@@ -77,6 +78,15 @@ export default function DashboardLayout() {
         >
           <LogOut size={16} /> Se déconnecter
         </button>
+
+        <Link
+          to="/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-2 flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-mist transition-colors hover:bg-white/5 hover:text-gold"
+        >
+          <ExternalLink size={16} /> Voir le site
+        </Link>
       </aside>
 
       <div className="flex-1">
@@ -85,12 +95,22 @@ export default function DashboardLayout() {
           <p className="font-display text-base font-semibold text-gold">
             Dashboard
           </p>
-          <button
-            onClick={() => signOut()}
-            className="flex items-center gap-1.5 text-xs text-mist"
-          >
-            <LogOut size={14} /> Déconnexion
-          </button>
+          <div className="flex items-center gap-4">
+            <Link
+              to="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-xs text-mist"
+            >
+              <ExternalLink size={14} /> Site
+            </Link>
+            <button
+              onClick={() => signOut()}
+              className="flex items-center gap-1.5 text-xs text-mist"
+            >
+              <LogOut size={14} /> Déconnexion
+            </button>
+          </div>
         </div>
         <div className="mx-auto max-w-6xl p-5 sm:p-8">
           <Outlet />
